@@ -27,27 +27,6 @@ Suricata is a robust open-source network security solution designed to enhance n
    - Automate threat response actions (e.g., dropping malicious packets).
    - Implement proactive security measures.
 
----
-
-## Repository Structure
-```
-Suricata-Project/
-├── docs/
-│   ├── Installation.md        # Step-by-step installation guide
-│   ├── Configuration.md       # Detailed configuration procedures
-│   └── Rules.md               # Guide to custom rule creation
-├── scripts/
-│   ├── setup_suricata.sh      # Bash script for automated Suricata setup
-│   └── monitor_traffic.py     # Python script for analyzing Suricata logs
-├── examples/
-│   ├── sample_logs/           # Example log files for analysis
-│   └── custom_rules/          # Custom Suricata rule examples
-├── LICENSE
-├── README.md                  # Overview and instructions
-└── CONTRIBUTING.md            # Contribution guidelines
-```
-
----
 
 ## Key Features
 
@@ -78,12 +57,47 @@ Suricata-Project/
 - Root or sudo privileges.
 
 ### Installation
-Follow the step-by-step instructions in [Installation.md](./docs/Installation.md).
+# Installing Suricata IDS on Ubuntu Server
 
-### Configuration
-Refer to [Configuration.md](./docs/Configuration.md) for detailed setup procedures, including modifying rule paths and validating service activity.
+1. Install Suricata on the Ubuntu endpoint. We tested this process with version 6.0.8 and it can take some time:
+```
+sudo add-apt-repository ppa:oisf/suricata-stable
+sudo apt-get update
+sudo apt-get install suricata -y
+```
 
----
+2. Download and extract the Emerging Threats Suricata ruleset:
+```
+cd /tmp/ && curl -LO https://rules.emergingthreats.net/open/suricata-6.0.8/emerging.rules.tar.gz
+sudo tar -xvzf emerging.rules.tar.gz && sudo mv rules/*.rules /etc/suricata/rules/
+sudo chmod 640 /etc/suricata/rules/*.rules
+```
+
+3. Modify Suricata settings in the /etc/suricata/suricata.yaml file and set the following variables:
+```JavaScript
+HOME_NET: "<UBUNTU_IP>"
+EXTERNAL_NET: "any"
+
+default-rule-path: /etc/suricata/rules
+rule-files:
+- "*.rules"
+
+# Global stats configuration
+stats:
+enabled: Yes
+
+# Linux high speed capture support
+af-packet:
+  - interface: eth0
+```
+
+4. Restart the Suricata service:
+```
+sudo systemctl restart suricata
+```
+
+
+
 
 ## Use Cases
 
@@ -95,13 +109,3 @@ Refer to [Configuration.md](./docs/Configuration.md) for detailed setup procedur
 
 ### Incident Response
 - Deploy in IPS mode to automate actions such as packet dropping, ensuring proactive security.
-
----
-
-## Contributions
-Contributions are welcome! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for more details.
-
----
-
-## License
-This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
